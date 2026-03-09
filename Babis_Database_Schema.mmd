@@ -1,0 +1,114 @@
+```mermaid
+erDiagram
+    USER {
+        ObjectId _id PK
+        String name
+        String phone UK "Must be +254..."
+        String email
+        String passwordHash
+        String role "customer | admin"
+        Boolean isVerified
+        Boolean isActive
+        Array addresses "Embedded: street, building, lat/lng"
+    }
+
+    CATEGORY {
+        ObjectId _id PK
+        String name
+        String slug UK
+        String description
+        String image
+        Boolean isActive
+        ObjectId parentCategory FK "Self-referencing (if hierarchical)"
+    }
+
+    PRODUCT {
+        ObjectId _id PK
+        ObjectId category FK
+        ObjectId createdBy FK "Refers to User (Admin)"
+        String name
+        String slug UK
+        String description
+        Number price
+        Number discountPrice
+        Array images
+        Array tags
+        Number stock
+        Array variations "Embedded: name, options[label, priceModifier, stock]"
+        Array faqs
+        Number weight
+        Boolean isActive
+        Boolean isFeatured
+        Number rating
+        Number reviewCount
+        Number soldCount
+    }
+
+    CART {
+        ObjectId _id PK
+        ObjectId user FK UK
+        Array items "Embedded: product._id, quantity, variation"
+    }
+
+    ORDER {
+        ObjectId _id PK
+        ObjectId user FK
+        String orderNumber UK "BP-XXXXX"
+        Array items "Embedded: product info snapshot, price, qty"
+        Number subtotal
+        Number deliveryFee
+        Number totalAmount
+        String deliveryType "pickup | delivery"
+        ObjectId pickupLocation FK
+        Object deliveryAddress "street, building, lat/lng"
+        String customerPhone
+        String customerName
+        String paymentMethod "mpesa default"
+        String paymentStatus "pending | paid | failed | refunded"
+        String mpesaReceiptNumber
+        String orderStatus "awaiting_payment | processing | out_for_delivery | delivered | cancelled"
+    }
+
+    REVIEW {
+        ObjectId _id PK
+        ObjectId product FK
+        ObjectId user FK
+        Number rating
+        String comment
+        Boolean isApproved
+    }
+
+    PICKUP_LOCATION {
+        ObjectId _id PK
+        String name
+        String address
+        String contactNumber
+        Boolean isActive
+    }
+
+    WISHLIST {
+        ObjectId _id PK
+        ObjectId user FK UK
+        Array products "Array of Product ObjectIds"
+    }
+
+    OTP {
+        ObjectId _id PK
+        String phone
+        String code
+        Date expiresAt
+    }
+
+    %% Relationships Definition
+    USER ||--o{ ORDER : places
+    USER ||--o| CART : has
+    USER ||--o| WISHLIST : maintains
+    USER ||--o{ REVIEW : writes
+    USER ||--o{ PRODUCT : creates_as_admin
+    CATEGORY ||--o{ PRODUCT : categorizes
+    PRODUCT ||--o{ REVIEW : receives
+    PRODUCT ||--o{ CART : added_to
+    PRODUCT ||--o{ ORDER : part_of
+    PRODUCT ||--o{ WISHLIST : favorited_in
+    ORDER }o--o| PICKUP_LOCATION : delivered_via
+```

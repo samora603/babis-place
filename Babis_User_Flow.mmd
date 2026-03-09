@@ -1,0 +1,133 @@
+```mermaid
+graph TD
+    %% User entry points
+    ExtUser([Customer]) --> LandingPage[Landing Page / App Open]
+    AdminUser([Store Administrator]) --> AdminLogin[Admin Login Page]
+
+    %% 1. User Authentication Flow
+    subgraph User Authentication ["1. User Authentication"]
+        LandingPage --> AuthCheck{Is Logged In?}
+        AuthCheck -->|No| AuthOptions[Authentication Options]
+        AuthCheck -->|Yes| Homepage
+        
+        AuthOptions --> Login[Login Page]
+        AuthOptions --> Register[Register Page]
+        
+        %% Registration
+        Register --> RegSubmit{Submit Registration}
+        RegSubmit -->|Failure| RegError[Show Validation Errors] --> Register
+        RegSubmit -->|Success| VerifyEmail[Verification Sent] --> Login
+        
+        %% Login
+        Login --> LoginSubmit{Submit Credentials}
+        LoginSubmit -->|Failure| LoginError[Show Invalid Credentials] --> Login
+        LoginSubmit -->|Success| Homepage[Homepage / Dashboard]
+        
+        %% Password Reset
+        Login --> ForgotPwd[Forgot Password]
+        ForgotPwd --> ResetLink{Send Reset Link}
+        ResetLink -->|Failure| LinkError[Show Error] --> ForgotPwd
+        ResetLink -->|Success| CheckEmail[Check Email] --> EnterNewPwd[Enter New Password]
+        EnterNewPwd --> PwdSubmit{Update Password}
+        PwdSubmit -->|Failure| PwdError[Show Validation Error] --> EnterNewPwd
+        PwdSubmit -->|Success| PwdSuccess[Password Updated] --> Login
+    end
+
+    %% 2. Product Browsing Flow
+    subgraph Product Browsing ["2. Product Browsing"]
+        Homepage --> BrowseMethods{Discovery Methods}
+        BrowseMethods --> NavCategories[Browse Categories]
+        BrowseMethods --> SearchBar[Search Function]
+        BrowseMethods --> FeaturedPromo[Featured/Promos]
+        
+        NavCategories --> ProductList[Product Listing Page]
+        SearchBar --> ProductList
+        FeaturedPromo --> ProductList
+        
+        ProductList --> FilterSort[Apply Filters & Sorting] --> ProductList
+        ProductList --> ClickProduct[Select Product] --> ProductDetails[Product Details Page]
+        
+        ProductDetails --> ViewMedia[View Images/Reviews]
+        ProductDetails --> SelectOptions[Select Variant/Size/Color]
+        SelectOptions --> AddToCart[Click Add to Cart]
+    end
+
+    %% 3. Cart Management Flow
+    subgraph Cart Management ["3. Cart Management"]
+        AddToCart --> CartAddStatus{Stock Available?}
+        CartAddStatus -->|No| OutOfStock[Show Out of Stock Error]
+        CartAddStatus -->|Yes| CartAdded[Show Success Toast/Modal]
+        
+        CartAdded --> CheckoutPrompt{Action}
+        CheckoutPrompt -->|Continue Shopping| ProductList
+        CheckoutPrompt -->|Go to Cart| ViewCart[View Cart Page]
+        
+        Homepage -->|Cart Icon| ViewCart
+        
+        ViewCart --> CartCheck{Is Cart Empty?}
+        CartCheck -->|Yes| EmptyCart[Show Empty Cart State] --> Homepage
+        CartCheck -->|No| ManageItems[Manage Cart Items]
+        
+        ManageItems --> UpdateQty[Update Quantity] --> ViewCart
+        ManageItems --> RemoveItem[Remove Item] --> ViewCart
+        
+        ManageItems --> ProceedCheckout[Proceed to Checkout]
+    end
+
+    %% 4. Checkout Process Flow
+    subgraph Checkout Process ["4. Checkout Process"]
+        ProceedCheckout --> CheckoutAuth{Is Authenticated?}
+        CheckoutAuth -->|No| CheckoutLogin[Login / Guest Checkout Prompt]
+        CheckoutAuth -->|Yes| ShippingPage[Shipping Information]
+        
+        CheckoutLogin -->|Success| ShippingPage
+        
+        ShippingPage --> ValidateShip{Validate Address}
+        ValidateShip -->|Failure| ShipError[Show Field Errors] --> ShippingPage
+        ValidateShip -->|Success| DeliveryOpts[Select Delivery Options]
+        
+        DeliveryOpts --> PaymentPage[Payment Selection]
+        PaymentPage --> PaymentSubmit{Process Payment}
+        
+        PaymentSubmit -->|Gateway Error| PayFail[Show Payment Failed State] --> PaymentPage
+        PaymentSubmit -->|Success| OrderCreated[Backend Order Generation]
+    end
+
+    %% 5. Order Confirmation Flow
+    subgraph Order Confirmation ["5. Order Confirmation"]
+        OrderCreated --> SuccessPage[Order Success Page]
+        SuccessPage --> OrderSummary[Display Order Summary & Invoice]
+        
+        OrderSummary --> TrackAction[Track Order]
+        TrackAction --> UserProfile[User Dashboard / Orders List]
+        
+        UserProfile --> ViewOrder[Select Specific Order]
+        ViewOrder --> OrderStatusUpdates[Real-time Status / Tracking Info]
+    end
+
+    %% 6. Admin Panel Flow
+    subgraph Admin Panel ["6. Admin Panel"]
+        AdminLogin --> AdminAuthCheck{Verify Admin Access}
+        AdminAuthCheck -->|Failure| AdminErr[Show Unauthorized Error] --> AdminLogin
+        AdminAuthCheck -->|Success| AdminDash[Admin Dashboard]
+        
+        AdminDash --> AdminNav{Navigation Menu}
+        
+        %% Analytics
+        AdminNav --> AnalyticsOverview[Dashboard Analytics Overview]
+        
+        %% Products
+        AdminNav --> ManageProducts[Manage Products]
+        ManageProducts --> AddNewItem[Add New Product Form]
+        ManageProducts --> EditItem[Edit/Delete Product Details]
+        
+        %% Orders
+        AdminNav --> ManageOrders[Manage Orders]
+        ManageOrders --> ViewOrderAdmin[View Customer Order Details]
+        ManageOrders --> UpdateOrderStatus[Update Status e.g., to Shipped]
+        
+        %% Reports
+        AdminNav --> SalesReports[Sales & Financial Reports]
+        SalesReports --> ExportReports[Export Data CSV/PDF]
+    end
+```
