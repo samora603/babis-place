@@ -34,10 +34,23 @@ export default function AdminProductForm() {
     setSaving(true);
     try {
       let result;
+      // Clean payload for optional numbers
+      const payload = { ...form };
+      ['discountPrice', 'weight', 'lowStockThreshold'].forEach(key => {
+        if (payload[key] === '') {
+          delete payload[key];
+        } else if (payload[key] !== undefined) {
+          payload[key] = Number(payload[key]);
+        }
+      });
+      ['price', 'stock'].forEach(key => {
+        payload[key] = Number(payload[key]);
+      });
+
       if (isEdit) {
-        result = await adminService.updateProduct(id, form);
+        result = await adminService.updateProduct(id, payload);
       } else {
-        result = await adminService.createProduct(form);
+        result = await adminService.createProduct(payload);
       }
       const productId = result.data.data._id;
 

@@ -39,6 +39,8 @@ export default function ProductCard({ product }) {
         <img
           src={image}
           alt={product.name}
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out opacity-90 group-hover:opacity-100 mix-blend-luminosity hover:mix-blend-normal"
         />
         {/* Transparent dark gradient overlay for image baseline */}

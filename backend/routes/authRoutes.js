@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const router = express.Router();
-const { requestOTP, verifyOTP, refreshToken, logout, getMe } = require('../controllers/authController');
+const { requestOTP, verifyOTP, adminLogin, refreshToken, logout, getMe } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 const { authLimiter } = require('../middleware/rateLimiter');
 
@@ -32,6 +32,8 @@ router.post(
     validateRequest,
     verifyOTP
 );
+
+router.post('/admin-login', adminLogin);
 
 router.post('/refresh-token', refreshToken);
 router.post('/logout', protect, logout);

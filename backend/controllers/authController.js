@@ -19,6 +19,38 @@ const requestOTP = async (req, res) => {
     res.json({ success: true, message: 'OTP sent successfully' });
 };
 
+// @desc  Admin Email/Password Login (Bypass OTP for Dev/Admin)
+// @route POST /api/auth/admin-login
+const adminLogin = async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ success: false, message: 'Please provide email and password' });
+    }
+
+    const user = await User.findOne({ email }).select('+passwordHash');
+
+    if (!user || user.role !== 'admin' || !user.isActive) {
+        return res.status(401).json({ success: false, message: 'Invalid credentials or unauthorized' });
+    }
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+        return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
+    const { accessToken, refreshToken } = generateTokens({ id: user._id, role: user.role });
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    res.json({
+        success: true,
+        accessToken,
+        refreshToken,
+        user,
+    });
+};
+
 // @desc  Verify OTP and login/register
 // @route POST /api/auth/verify-otp
 const verifyOTP = async (req, res) => {
@@ -94,4 +126,4 @@ const getMe = async (req, res) => {
     res.json({ success: true, user });
 };
 
-module.exports = { requestOTP, verifyOTP, refreshToken, logout, getMe };
+module.exports = { requestOTP, verifyOTP, adminLogin, refreshToken, logout, getMe };

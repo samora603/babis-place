@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
 import { formatCurrency, getPrimaryImage } from '@/utils/helpers';
 import QuantitySelector from '@/components/ui/QuantitySelector';
+import Skeleton from '@/components/ui/Skeleton';
 import { FiTrash2, FiShoppingBag } from 'react-icons/fi';
 import { GiBee } from 'react-icons/gi';
 
@@ -35,13 +36,28 @@ export default function Cart() {
 
         <div className="grid lg:grid-cols-3 gap-10 lg:gap-14">
           <div className="lg:col-span-2 space-y-6">
-            {items.map((item) => {
-              const image = getPrimaryImage(item.product?.images || []);
-              const price = (item.product?.discountPrice || item.product?.price || 0) + (item.variation?.priceModifier || 0);
-              return (
+            {loading ? (
+              [...Array(3)].map((_, i) => (
+                <div key={i} className="p-5 rounded-2xl bg-[#111] border border-brand-500/10 shadow-md flex gap-5">
+                  <Skeleton className="w-28 h-28 shrink-0 rounded-xl" variant="rectangular" />
+                  <div className="flex-1 flex flex-col min-w-0 pr-4">
+                    <Skeleton className="w-3/4 h-6 mb-2" variant="text" />
+                    <Skeleton className="w-1/4 h-4" variant="text" />
+                    <div className="flex items-end justify-between mt-auto pt-4 border-t border-brand-500/5">
+                      <Skeleton className="w-24 h-6" variant="text" />
+                      <Skeleton className="w-20 h-8 rounded-lg" variant="rectangular" />
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              items.map((item) => {
+                const image = getPrimaryImage(item.product?.images || []);
+                const price = (item.product?.discountPrice || item.product?.price || 0) + (item.variation?.priceModifier || 0);
+                return (
                 <div key={item._id} className="p-5 rounded-2xl bg-[#111] border border-brand-500/10 hover:border-brand-500/30 transition-all duration-300 shadow-md flex gap-5 group">
                   <Link to={`/shop/${item.product?.slug || item.product?._id}`} className="shrink-0 relative overflow-hidden rounded-xl border border-brand-500/20">
-                    <img src={image} alt={item.product?.name} className="w-28 h-28 object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <img src={image} alt={item.product?.name} loading="lazy" decoding="async" className="w-28 h-28 object-cover group-hover:scale-110 transition-transform duration-500" />
                   </Link>
                   <div className="flex-1 flex flex-col min-w-0">
                     <div className="flex justify-between items-start gap-4">
@@ -65,7 +81,8 @@ export default function Cart() {
                   </div>
                 </div>
               );
-            })}
+            })
+            )}
           </div>
 
           {/* Summary */}

@@ -36,18 +36,27 @@ const initiateStkPush = async (req, res) => {
         TransactionDesc: `Payment for order ${order.orderNumber}`,
     };
 
-    const { data } = await axios.post(
-        `${MPESA_BASE_URL}/mpesa/stkpush/v1/processrequest`,
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-    );
+    try {
+        const { data } = await axios.post(
+            `${MPESA_BASE_URL}/mpesa/stkpush/v1/processrequest`,
+            payload,
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-    if (data.ResponseCode === '0') {
-        order.mpesaCheckoutRequestId = data.CheckoutRequestID;
-        await order.save();
-        res.json({ success: true, checkoutRequestId: data.CheckoutRequestID, message: 'STK Push sent to your phone' });
-    } else {
-        res.status(400).json({ success: false, message: data.errorMessage || 'STK Push failed' });
+        if (data.ResponseCode === '0') {
+            order.mpesaCheckoutRequestId = data.CheckoutRequestID;
+            await order.save();
+            res.json({ success: true, checkoutRequestId: data.CheckoutRequestID, message: 'STK Push sent to your phone' });
+        } else {
+            console.error('M-Pesa STK Push Error:', data);
+            res.status(400).json({ success: false, message: data.errorMessage || 'STK Push failed' });
+        }
+    } catch (error) {
+        console.error('M-Pesa Request Exception:', error.response?.data || error.message);
+        res.status(502).json({
+            success: false,
+            message: error.response?.data?.errorMessage || 'Failed to communicate with M-Pesa'
+        });
     }
 };
 

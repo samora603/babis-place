@@ -1,11 +1,15 @@
 import ProductCard from './ProductCard';
 import Spinner from '@/components/ui/Spinner';
 
+import ProductCardSkeleton from './ProductCardSkeleton';
+
 export default function ProductGrid({ products = [], loading = false, emptyMessage = 'No products found.' }) {
   if (loading) {
     return (
-      <div className="flex justify-center py-20">
-        <Spinner size="lg" />
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {[...Array(8)].map((_, i) => (
+          <ProductCardSkeleton key={i} />
+        ))}
       </div>
     );
   }

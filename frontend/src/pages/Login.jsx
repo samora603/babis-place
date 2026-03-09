@@ -8,7 +8,7 @@ import Button from '@/components/ui/Button';
 import OtpInput from '@/components/auth/OtpInput';
 import { HiArrowRight } from 'react-icons/hi';
 
-const STEPS = { PHONE: 'phone', OTP: 'otp' };
+const STEPS = { PHONE: 'phone', OTP: 'otp', ADMIN: 'admin' };
 
 export default function Login() {
   const { login } = useAuth();
@@ -19,6 +19,10 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [canResend, setCanResend] = useState(false);
   const [timer, setTimer] = useState(30);
+
+  // Admin states
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   // Timer for OTP resend
   useEffect(() => {
@@ -72,6 +76,21 @@ export default function Login() {
     }
   };
 
+  const handleAdminLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { data } = await authService.adminLogin(email, password);
+      login(data.user, { accessToken: data.accessToken, refreshToken: data.refreshToken });
+      toast.success('Admin login successful');
+      navigate('/admin/dashboard');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Invalid admin credentials');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex text-slate-100 bg-surface">
       {/* Left side - Decorative */}
@@ -107,7 +126,7 @@ export default function Login() {
               <p className="text-slate-400 text-sm">Sign in to your account to continue</p>
             </div>
 
-            {step === STEPS.PHONE ? (
+            {step === STEPS.PHONE && (
               <form onSubmit={handleRequestOTP} className="space-y-6">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-300" htmlFor="login-phone">
@@ -134,7 +153,9 @@ export default function Login() {
                   <HiArrowRight className="group-hover:translate-x-1 transition-transform" />
                 </Button>
               </form>
-            ) : (
+            )}
+
+            {step === STEPS.OTP && (
               <form onSubmit={handleVerifyOTP} className="space-y-8 animate-fade-in">
                 <div className="space-y-4">
                   <div className="flex justify-between items-end">
@@ -182,13 +203,61 @@ export default function Login() {
               </form>
             )}
 
-            <div className="mt-8 pt-6 border-t border-white/10 text-center">
+            {step === STEPS.ADMIN && (
+              <form onSubmit={handleAdminLogin} className="space-y-6 animate-fade-in">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-300" htmlFor="admin-email">Email</label>
+                  <input
+                    id="admin-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="admin@babis.place"
+                    required
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all duration-200"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-300" htmlFor="admin-password">Password</label>
+                  <input
+                    id="admin-password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all duration-200"
+                  />
+                </div>
+                <Button type="submit" loading={loading} className="w-full py-3.5 mt-2">
+                  Admin Sign In
+                </Button>
+              </form>
+            )}
+
+            <div className="mt-8 pt-6 border-t border-white/10 flex flex-col gap-4 text-center">
               <p className="text-sm text-slate-400">
                 New to Babis Place?{' '}
                 <Link to="/register" className="text-brand-400 hover:text-brand-300 font-medium transition-colors">
                   Create an account
                 </Link>
               </p>
+              
+              {step !== STEPS.ADMIN ? (
+                <button 
+                  onClick={() => setStep(STEPS.ADMIN)}
+                  className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                >
+                  Admin Developer Login
+                </button>
+              ) : (
+                <button 
+                  onClick={() => setStep(STEPS.PHONE)}
+                  className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                >
+                  Back to Customer Login
+                </button>
+              )}
             </div>
           </div>
         </div>

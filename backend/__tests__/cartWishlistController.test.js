@@ -18,7 +18,9 @@ jest.setTimeout(60000);
 beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
     const uri = mongoServer.getUri();
-    await mongoose.connect(uri);
+    await mongoose.connect(uri, {
+        serverSelectionTimeoutMS: 5000
+    });
 
     process.env.JWT_SECRET = 'test_secret';
     process.env.JWT_REFRESH_SECRET = 'test_refresh_secret';
@@ -42,9 +44,14 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    await mongoose.connection.dropDatabase();
-    await mongoose.connection.close();
-    await mongoServer.stop();
+    if (mongoose.connection.readyState !== 0) {
+        await mongoose.connection.dropDatabase();
+        await mongoose.connection.close();
+        await mongoose.disconnect();
+    }
+    if (mongoServer) {
+        await mongoServer.stop();
+    }
 });
 
 afterEach(async () => {
