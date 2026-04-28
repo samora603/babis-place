@@ -148,7 +148,7 @@ const importData = async () => {
             }
         ];
 
-        await Product.insertMany(sampleProducts);
+        await Product.create(sampleProducts);
         console.log('🛍️ Products created.');
 
         console.log('✨ Data Import Successful!');
