@@ -112,3 +112,29 @@
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.8; transform: scale(1.02); }
 }
+
+@keyframes slowZoom {
+  0% {
+    transform: scale(1);
+  }
+
+  100% {
+    transform: scale(1.1);
+  }
+}
+
+.animate-slow-zoom {
+  animation: slowZoom 10s ease-in-out infinite alternate;
+}
+
+/* Swiper Pagination Styling */
+.swiper-pagination-bullet {
+  background: rgba(212, 175, 55, 0.5) !important;
+  opacity: 1 !important;
+}
+
+.swiper-pagination-bullet-active {
+  background: #d4af37 !important;
+  width: 24px;
+  border-radius: 999px;
+}
